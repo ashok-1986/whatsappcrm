@@ -331,6 +331,27 @@ async function handleStatusUpdate(status: {
 }) {
   // 1) Mirror onto messages (legacy behavior) — Meta's status values
   //    already match the CHECK constraint on messages.status.
+  const { data: currentMessage, error: currentMsgError } = await supabaseAdmin()
+    .from('messages')
+    .select('status')
+    .eq('message_id', status.id)
+    .maybeSingle()
+
+  if (currentMsgError) {
+    console.error('Error fetching current message status:', currentMsgError)
+    return
+  }
+
+  if (!currentMessage) {
+    console.log('Message not found for status update:', status.id)
+    return
+  }
+
+  if (!isValidStatusTransition(currentMessage.status, status.status)) {
+    console.log(`Skipping status update: invalid transition from ${currentMessage.status} to ${status.status} for message ${status.id}`)
+    return
+  }
+
   const { error: msgErr } = await supabaseAdmin()
     .from('messages')
     .update({ status: status.status })
@@ -363,7 +384,7 @@ async function handleStatusUpdate(status: {
   if (!isValidStatusTransition(recipient.status, status.status)) return
 
   const update: Record<string, unknown> = { status: status.status }
-  if (status.status === 'sent' && !('sent_at' in update)) update.sent_at = tsIso
+  if (status.status === 'sent') update.sent_at = tsIso
   if (status.status === 'delivered') update.delivered_at = tsIso
   if (status.status === 'read') update.read_at = tsIso
 
@@ -616,18 +637,15 @@ async function processMessage(
   }
 
   // Update conversation
-  const { error: convError } = await supabaseAdmin()
-    .from('conversations')
-    .update({
-      last_message_text: contentText || `[${message.type}]`,
-      last_message_at: new Date().toISOString(),
-      unread_count: (conversation.unread_count || 0) + 1,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', conversation.id)
+  const { error: convError } = await supabaseAdmin().rpc('increment_unread_and_touch', {
+    p_conversation_id: conversation.id,
+    p_last_message_text: contentText || `[${message.type}]`,
+    p_last_message_at: new Date().toISOString(),
+    p_updated_at: new Date().toISOString(),
+  })
 
   if (convError) {
-    console.error('Error updating conversation:', convError)
+    console.error('Error updating conversation via RPC:', convError)
   }
 
   // If this contact was a recent broadcast recipient, flag the reply
