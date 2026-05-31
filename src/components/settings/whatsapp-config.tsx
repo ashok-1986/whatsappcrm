@@ -76,7 +76,7 @@ export function WhatsAppConfig() {
 
   const webhookUrl =
     typeof window !== 'undefined'
-      ? `${window.location.origin}/api/whatsapp/webhook`
+      ? `${window.location.origin}/api/webhook/whatsapp`
       : '';
 
   const fetchConfig = useCallback(async (userId: string) => {
