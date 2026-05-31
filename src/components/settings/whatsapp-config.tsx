@@ -522,6 +522,7 @@ export function WhatsAppConfig() {
             <div className="space-y-2">
               <Label className="text-slate-300">Phone Number ID</Label>
               <Input
+                autoComplete="off"
                 placeholder="e.g. 100234567890123"
                 value={phoneNumberId}
                 onChange={(e) => setPhoneNumberId(e.target.value)}
@@ -532,6 +533,7 @@ export function WhatsAppConfig() {
             <div className="space-y-2">
               <Label className="text-slate-300">WhatsApp Business Account ID</Label>
               <Input
+                autoComplete="off"
                 placeholder="e.g. 100234567890456"
                 value={wabaId}
                 onChange={(e) => setWabaId(e.target.value)}
@@ -543,6 +545,7 @@ export function WhatsAppConfig() {
               <Label className="text-slate-300">Permanent Access Token</Label>
               <div className="relative">
                 <Input
+                  autoComplete="new-password"
                   type={showToken ? 'text' : 'password'}
                   placeholder="Enter your access token"
                   value={accessToken}
@@ -576,6 +579,7 @@ export function WhatsAppConfig() {
             <div className="space-y-2">
               <Label className="text-slate-300">Webhook Verify Token</Label>
               <Input
+                autoComplete="off"
                 placeholder="Create a custom verify token"
                 value={verifyToken}
                 onChange={(e) => setVerifyToken(e.target.value)}
@@ -594,6 +598,7 @@ export function WhatsAppConfig() {
                 )}
               </Label>
               <Input
+                autoComplete="off"
                 type="text"
                 inputMode="numeric"
                 maxLength={6}
